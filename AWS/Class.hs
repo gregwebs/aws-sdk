@@ -20,7 +20,7 @@ import qualified Control.Monad.State as S
 import Control.Monad.Reader (ReaderT(..), MonadReader)
 import qualified Control.Monad.Reader as R
 import Control.Applicative
-import Control.Monad (liftM)
+import Control.Monad
 import Control.Monad.Base (MonadBase)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Trans.Class (MonadTrans, lift)
@@ -110,6 +110,15 @@ class Read a => FromText a where
         $ t
     fromTextMay :: Text -> Maybe a
     fromTextMay = readMay . T.unpack
+    fromMaybeText :: MonadThrow m => Maybe Text -> m a
+    fromMaybeText
+        = maybe (monadThrow $ TextConversionException "no text") fromText
+
+instance FromText a => FromText (Maybe a) where
+    fromText = return . join . fromTextMay
+    fromTextMay = Just . readMay . T.unpack
+    fromMaybeText Nothing  = return Nothing
+    fromMaybeText (Just t) = fromText t >>= return . Just
 
 instance FromText Int
 instance FromText Integer

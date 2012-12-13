@@ -94,7 +94,8 @@ getF name f = f <$> tagContent name
 getT :: (MonadThrow m, FromText a)
     => Text
     -> Pipe Event Event o u m a
-getT name = tagContent name >>= lift . fromText
+--getT name = tagContent name >>= lift . fromText
+getT name = tagContentM name >>= lift . fromMaybeText
 
 getT_ :: forall m o u . MonadThrow m
     => Text
@@ -110,7 +111,7 @@ getM name f = f <$> tagContentM name
 getMT :: (MonadThrow m, FromText a)
     => Text
     -> Pipe Event Event o u m (Maybe a)
-getMT name = getM name (>>= fromTextMay)
+getMT name = getT name
 
 elementM :: MonadThrow m
     => Text
